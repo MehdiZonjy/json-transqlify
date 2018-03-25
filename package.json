@@ -1,0 +1,35 @@
+{
+  "name": "json-transqlify",
+  "version": "1.0.0-alpha.1",
+  "description": "Transforms and loads JSON to a Mysql db",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "author": "Mehdi Zonjy",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/ajv": "^1.0.0",
+    "jest": "^22.4.2"
+  },
+  "dependencies": {
+    "ajv": "^6.0.1",
+    "lodash": "^4.17.5",
+    "promise-mysql": "^3.2.0",
+    "ramda": "^0.25.0",
+    "winston": "^2.4.1",
+    "yamljs": "^0.3.0"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "keywords": [
+    "transform",
+    "load",
+    "json",
+    "mysql",
+    "sql",
+    "etl"
+  ]
+}

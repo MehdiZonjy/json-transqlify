@@ -1,0 +1,26 @@
+version: 1.0
+validator:
+  schema:
+    default: lesson-schema.json
+loaders:
+  - insert:
+      label: InsertCourse
+      tableName: courses
+      transform:
+        columns:
+          - column: title
+            value: $entity.course.title
+          - column: level
+            value: $entity.course.level
+      on:
+        - db:
+            query: SELECT 1 from courses where title = ?
+            params:
+              - $entity.course.title
+            expect: $rows.length === 0
+  - insert:
+      label: InsertLesson
+      tableName: lessons
+      transform:
+        func: transform-lesson.js
+      

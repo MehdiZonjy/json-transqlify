@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "course": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "level": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "title",
+        "level"
+      ]
+    }
+  },
+  "required": [
+    "title",
+    "course"
+  ]
+}
