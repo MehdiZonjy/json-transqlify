@@ -31,5 +31,8 @@
     "mysql",
     "sql",
     "etl"
-  ]
+  ],
+  "repository": {
+    "url": "https://github.com/MehdiZonjy/json-transqlify"
+  }
 }
