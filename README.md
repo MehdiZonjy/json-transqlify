@@ -2,7 +2,29 @@
 This library aims to abstract away some of the common functilnality involved when transforming and loading JSON into a Mysql database.
 By common functionality I'm specifically referring to (Validate, Transform, Insert/Update)
 
-## How does it work
+## Contents
+- [How It Works](#howItWorks)
+- [API](#api)
+  - [Version](#version)
+  - [Validator](#validator)
+    - [Schema](#schemaValidator)
+    - [Custom Function Validator](#funcValidator) 
+  - [Transformers](#transformers)
+    - [Columns Transformer](#columnsTransformer)
+    - [Custom Function Transformer](#funcTransformer)
+  - [Loaders](#loaders)
+    - [Insert Loader](#insertLoader)
+    - [Update Loader](#updateLoader)
+  - [Preconditions](#preconditions)
+    - [Expression Precondition](#expPrecondition)
+    - [Db Precondition](#dbPrecondition)
+    - [Custom Function Precondition](#funcPrecondition)
+  - [$history](#$history)
+## <a nane="howItworks"></a>How does it works
+```
+npm install json-transqlify
+```
+
 You define how your entire TL(Transform Load) pipeline should look like by using a `yaml` definition file.
 Each definition file consistes of 2 main secions.
  - Validator: which uses `json-schema` to validate the entity you are trying to TL.
@@ -107,17 +129,17 @@ const obj = { name: "Harry Potter", age: 10, address: { city: 'UK', country: 'Li
 transqlifier(obj);
 ```
 **Please refer to examples folder** 
-## API
+## <a name="api"></a>API
 The definition file consists of the following sections
-### Version
+### <a name="version"></a>Version
 should be 1.0 for now
 ```yaml
 version: 1.0
 ```
 
-### Validator
+### <a name="validator"></a>Validator
 The Validator filters out entities before they get handed to the Loaders. There are two kind of validators:
-#### 1. Schema
+#### <a name="schemaValidator"></a>1. Schema
 a schema validator can be defined using json files to describe how the entity schema should look like. Underneath the hood Json Transqlifier uses [AJV](https://github.com/epoberezkin/ajv) implementation of [Json Schema](http://json-schema.org/)
 
 The schema file for the entity should go under the `default` section (refer to the example below). While any `$ref` defniitions can used to load any additional definitions that the default schema might refer to.
@@ -167,7 +189,7 @@ validator:
       id: Address
       file: address-schema.json
 ```
-#### Func Validator
+#### <a name="funcValidator"></a>2. Func Validator
 when a `schema` validator is not enough you can have more control by providing a custom function validator.
 The function should be defined in a seperate file and exposed as a default export 
 ```javascript
@@ -182,9 +204,9 @@ validator:
   func: is-odd.js
 ```
 
-### Transformers
+### <a name="transformers"></a>Transformers
 Transformers are defined as part lof `loaders`. They map the given `$entity` to table columns. 
-#### 1. columns
+#### <a name="columnsTransformer"></a>1. columns
 The columns transformers allows you to map `$entity` to table columns by defining custom expressions.
 
 For example, given the `User` object mentioned earlier and `users` table with (fname, lname, age, country, city) columns
@@ -204,7 +226,7 @@ transformer:
 ```
 *$history:* if the transformer was part of multiple loaders pipeline, the `$history` can be used to access values transformed via a previous loader (more on this later)
 
-#### 2.Func Transformer
+#### <a name="funcTransformer"></a>2. Func Transformer
 A Custom function trasformer can be used by providing a file with a default exported function that should return a promise
 
 ```js
@@ -226,12 +248,12 @@ transformer:
   func: customer-transformer.js
 ```
 
-### Loaders
+### <a name="loaders"></a>Loaders
 Loaders handle massaging the JSON (entity) and Inserting/Updating the DB.
 
 The `loaders` section is an array, so you can insert the JSON into multiple tables by defining multiple loaders.
 
-#### 1.Insert
+#### <a name="insertLoader"></a>1.Insert
 The insert loaders inserts entity to a given table. It requires a `transformer` to be defined. 
 ```yaml
 loaders:
@@ -244,7 +266,7 @@ loaders:
             value: $entity.name 
 
 ```
-#### 2. Update
+#### <a name="updateLoader"><a/> 2. Update
 The Update loader is used to update an existing row in db. It requires a `transformer` and update condition
 
 ```yaml
@@ -261,9 +283,9 @@ loaders:
           - $entity.id
 ```
 
-### Preconditions
+### <a name="preconditions"></a>Preconditions
 Preconditions validate `$enitity` before executing the loader, and if it returns false, the loader does not get executed
-#### 1. Expression Precondition (exp)
+#### <a name="expPrecondition"></a>1. Expression Precondition (exp)
 Evalutes a given expression at runtime that can access `$entity` and `$history` objects. It can also use `_` lodash
 ```yaml
 loaders:
@@ -275,7 +297,7 @@ loaders:
     on: # pre conditions are defined here 
       - exp: $entity.age < 30 # only insert uses who are below 30
 ```
-#### 2. Database Query (db)
+#### <a name="dbPrecondition"></a>2. Database Query (db)
 Runs a query against the db and allows you to assert the returned result.
 Forexample, we want to insert a `course` but avoide duplicate titles
 ```json
@@ -299,7 +321,7 @@ loaders:
           expect: $rows.length === 0 # $rows refers to the result of query 
 ```
 
-#### 3: Custom Precondition function (func)
+#### <a name="funcPrecondition"></a>3: Custom Precondition function (func)
 Executed a custom precondition function. The function is expected to return a promise that resolves to `true` or `false
 ```js
 // custom-precondition.js
@@ -326,7 +348,7 @@ loaders:
 
 *Note:* preconditions are defined inside an array object. Meaning, you can provide multiple preconditions that should all resolve to `true` for the loader to execute.
 
-### $history
+### <a name="$history"></a> $history
 The $history object can be accessed inside `transformers` and `preconditions`. It contains the result of previous loaders. For example
 ```yaml
 loaders:
