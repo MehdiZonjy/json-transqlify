@@ -1,0 +1,24 @@
+version: 1.0
+validator:
+  schema:
+    default: lesson-schema.json
+loaders:
+  - upsert:
+      label: InsertCourse
+      tableName: courses
+      primaryKey: id
+      transform:
+        columns:
+          - column: title
+            value: $entity.course.title
+          - column: level
+            value: $entity.course.level
+  - insert:
+      label: InsertLesson
+      tableName: lessons
+      transform:
+        columns:
+          - column: title
+            value: $entity.title
+          - column: course_id
+            value: $history.InsertCourse.$insertedId

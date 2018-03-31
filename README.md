@@ -15,6 +15,7 @@ By common functionality I'm specifically referring to (Validate, Transform, Inse
   - [Loaders](#loaders)
     - [Insert Loader](#insertLoader)
     - [Update Loader](#updateLoader)
+    - [Upsert Loader](#upsertLoader)
   - [Preconditions](#preconditions)
     - [Expression Precondition](#expPrecondition)
     - [Db Precondition](#dbPrecondition)
@@ -266,7 +267,7 @@ loaders:
             value: $entity.name 
 
 ```
-#### <a name="updateLoader"><a/> 2. Update
+#### <a name="updateLoader"></a> 2. Update
 The Update loader is used to update an existing row in db. It requires a `transformer` and update condition
 
 ```yaml
@@ -282,6 +283,20 @@ loaders:
         params:
           - $entity.id
 ```
+#### <a name="upsertLoader"></a> 3. Upsert
+The Upsert loader is used to insert or update (on duplicate key error) existing record. It requires a `transformer`, `tableName`, and `label`.
+```yaml
+loaders:
+  - upsert:
+      tableName: courses
+      transformer:
+        columns:
+          - column: title # when the title column has a unique index constraint, the existing record will get updated  
+            value: $entity.title
+          - column: difficulty
+            value: $entity.difficulty
+```
+checkout the `examples/upsert-example` for working demo
 
 ### <a name="preconditions"></a>Preconditions
 Preconditions validate `$enitity` before executing the loader, and if it returns false, the loader does not get executed
