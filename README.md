@@ -289,6 +289,7 @@ The Upsert loader is used to insert or update (on duplicate key error) existing 
 loaders:
   - upsert:
       tableName: courses
+      primaryKey: id 
       transformer:
         columns:
           - column: title # when the title column has a unique index constraint, the existing record will get updated  
@@ -296,6 +297,7 @@ loaders:
           - column: difficulty
             value: $entity.difficulty
 ```
+`primaryKey` is an optional field. It pointes to the auto incremented column (if any) in db. In case of update, it will be needed to retrieve the `id` of the affected row. 
 checkout the `examples/upsert-example` for working demo
 
 ### <a name="preconditions"></a>Preconditions

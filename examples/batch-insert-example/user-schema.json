@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "age": {
+      "type": "number"
+    },
+    "address": {
+      "$ref": "demo/address"
+    }
+  },
+  "required": [
+    "name",
+    "age"
+  ]
+}

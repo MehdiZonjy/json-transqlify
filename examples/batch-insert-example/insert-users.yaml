@@ -1,0 +1,23 @@
+version: 1.0
+# validator:
+#   schema:
+#     default: user-schema.json
+#     refs: 
+#       - id: demo/address
+#         file: address-schema.json
+loaders:
+  - batchInsert:
+      label: InsertUsers
+      tableName: users
+      source: $entity
+      transform:
+        columns:
+          - column: fname
+            value: $entity.name.split(' ')[0]
+          - column: lname
+            value: $entity.name.split(' ')[1]
+          - column: country
+            value: $entity.address.country
+          - column: city
+            value: $entity.address.city
+            
