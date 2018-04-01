@@ -1,10 +1,5 @@
 version: 1.0
-# validator:
-#   schema:
-#     default: user-schema.json
-#     refs: 
-#       - id: demo/address
-#         file: address-schema.json
+
 loaders:
   - batchInsert:
       label: InsertUsers
