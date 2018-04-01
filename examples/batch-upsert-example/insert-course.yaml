@@ -1,0 +1,12 @@
+version: 1.0
+loaders:
+  - batchUpsert:
+      label: InsertCourse
+      source: $entity
+      tableName: courses
+      transform:
+        columns:
+          - column: title
+            value: $entity.title
+          - column: level
+            value: $entity.level
