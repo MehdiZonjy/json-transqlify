@@ -20,4 +20,6 @@ loaders:
             value: $entity.address.country
           - column: city
             value: $entity.address.city
+      on:
+        - exp: $entity.age < 30
             
