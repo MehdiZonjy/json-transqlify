@@ -1,6 +1,6 @@
 {
   "name": "json-transqlify",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Transforms and loads JSON to a Mysql db",
   "main": "lib/index.js",
   "scripts": {
