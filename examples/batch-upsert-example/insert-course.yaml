@@ -3,7 +3,8 @@ loaders:
   - batchUpsert:
       label: InsertCourse
       source: $entity
-      tableName: courses
+      tableName: 
+        exp: $entity.length> 0 ? 'courses' : 'courses' #just to demo tableName thingy
       transform:
         columns:
           - column: title

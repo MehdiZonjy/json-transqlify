@@ -23,6 +23,7 @@ By common functionality I'm specifically referring to (Validate, Transform, Inse
     - [Db Precondition](#dbPrecondition)
     - [Custom Function Precondition](#funcPrecondition)
   - [$history](#$history)
+  - [tableName](#$tableName)
 ## <a nane="howItworks"></a>How does it works
 ```
 npm install json-transqlify
@@ -434,3 +435,14 @@ loaders:
 *note:* In case there is a precondition defined in the First Loader, and that precondition happened to evalute to false, the loader result won't be added to `$history` object
 
 
+### <a name="$tableName"></a> tableName
+the table name field defined in `loader` can either be a string refering to the table name.
+or it can be an expression evaulated at run time. The expression has access to the following variables
+`_`, `R` (ramda), `$entity`, `$source` (in case of batchInsert and batchUpsert loaders)
+
+```yaml
+loaders:
+  - insert:
+      tableName:
+        exp: $entity.tableName
+```
