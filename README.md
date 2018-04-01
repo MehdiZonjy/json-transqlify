@@ -17,6 +17,7 @@ By common functionality I'm specifically referring to (Validate, Transform, Inse
     - [Update Loader](#updateLoader)
     - [Upsert Loader](#upsertLoader)
     - [Batch Insert Loader](#batchInsertLoader)
+    - [Batch Upsert Loader](#batchUpsertLoader)
   - [Preconditions](#preconditions)
     - [Expression Precondition](#expPrecondition)
     - [Db Precondition](#dbPrecondition)
@@ -328,6 +329,21 @@ In cases were $entity is the array of items you wish to insert, then deine `sour
 source: $entity
 ```
 
+#### <a name="batchUpsertLoader"></a> 3. Batch Upsert Loader
+In cases where you want to insert a bulk of data in one go. Batch Upsert Loader will insert and updated existing record in one transaction. It requires you to define `transformer`, `tableName`, `label` and `source`. 
+
+```yaml
+  - batchUpsert:
+      source: $entity
+      tableName: courses
+      primaryKey: id 
+      transformer:
+        columns:
+          - column: title # when the title column has a unique index constraint, the existing record will get updated  
+            value: $entity.title
+          - column: difficulty
+            value: $entity.difficulty
+```
 
 ### <a name="preconditions"></a>Preconditions
 Preconditions validate `$enitity` before executing the loader, and if it returns false, the loader does not get executed
