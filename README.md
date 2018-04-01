@@ -16,6 +16,7 @@ By common functionality I'm specifically referring to (Validate, Transform, Inse
     - [Insert Loader](#insertLoader)
     - [Update Loader](#updateLoader)
     - [Upsert Loader](#upsertLoader)
+    - [Batch Insert Loader](#batchInsertLoader)
   - [Preconditions](#preconditions)
     - [Expression Precondition](#expPrecondition)
     - [Db Precondition](#dbPrecondition)
@@ -299,6 +300,34 @@ loaders:
 ```
 `primaryKey` is an optional field. It pointes to the auto incremented column (if any) in db. In case of update, it will be needed to retrieve the `id` of the affected row. 
 checkout the `examples/upsert-example` for working demo
+
+#### <a name="batchInsertLoader"></a> 3. Batch Insert Loader
+In cases where you want to insert a bulk of data in one go. Batch Insert Loader offers a great performance gain over multiple `Insert Loader`. It requires you to define `transformer`, `tableName`, `label` and `source`. 
+```yaml
+  - batchInsert:
+      tableName: users # table to insert entity into
+      source: $entity
+      label: insertUser # a custom name to the loader.
+      trasformer: # refer to transformers doc
+        columns:
+          - column: fname
+            value: $entity.name 
+```
+Source is an expression that should return an array of items that will be inserted. For example if `$entity` is
+```javascript
+{
+  items: ['item1', 'item1']
+}
+```
+Then `source` should be defined as 
+```yaml
+source: $entity.source
+```
+In cases were $entity is the array of items you wish to insert, then deine `source` as 
+```yaml
+source: $entity
+```
+
 
 ### <a name="preconditions"></a>Preconditions
 Preconditions validate `$enitity` before executing the loader, and if it returns false, the loader does not get executed
