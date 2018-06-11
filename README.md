@@ -1,6 +1,9 @@
 # JSON TRANS SQLIFY 
-This library aims to abstract away some of the common functilnality involved when transforming and loading JSON into a Mysql database.
-By common functionality I'm specifically referring to (Validate, Transform, Insert/Update)
+This library aims to abstract away the following common functionalities involved when transforming and loading JSON into a MySQL database:
+
+- Validation.
+- Transformation.
+- Insert and Update.
 
 ## Contents
 - [How It Works](#howItWorks)
@@ -24,17 +27,18 @@ By common functionality I'm specifically referring to (Validate, Transform, Inse
     - [Custom Function Precondition](#funcPrecondition)
   - [$history](#$history)
   - [tableName](#$tableName)
-## <a nane="howItworks"></a>How does it works
+
+## <a name="howItworks"></a>How It Works
 ```
 npm install json-transqlify
 ```
 
-You define how your entire TL(Transform Load) pipeline should look like by using a `yaml` definition file.
-Each definition file consistes of 2 main secions.
+You define how your entire TL (Transform Load) pipeline should look like with a `yaml` definition file.
+Each definition file consists of two main sections:
  - Validator: which uses `json-schema` to validate the entity you are trying to TL.
  - Loaders: which does the actually Insert, Update to the specific tables
 
-Assuming you have a bunch of user objects that you would like to insert to your db. Each user has the following fields
+Assuming you have a bunch of user objects that you would like to insert to your database and each user contains the following fields:
 ```json
 {
   "name": "FIRST_NAME LAST_NAME",
@@ -45,7 +49,8 @@ Assuming you have a bunch of user objects that you would like to insert to your 
   }
 }
 ```
-The user Table schema is
+
+The user Table schema is:
 ```sql
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -57,7 +62,8 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`)
 )
 ```
-A Simple definition file that TL(Transforms and Loads) user objects might look like this
+
+A Simple definition file that TL user objects might look like this:
 ```yaml
 version: 1.0
 validator:
@@ -81,7 +87,8 @@ loaders: # notice loaders is an array
             value: $entity.age
             
 ``` 
-The `user-schema.json` uses `json-schema` rules to validate each user object you are trying to insert.
+
+The `user-schema.json` uses `json-schema` rules to validate each user object to be inserted:
 ``` json
 {
   "type": "object",
@@ -113,7 +120,8 @@ The `user-schema.json` uses `json-schema` rules to validate each user object you
   ]
 }
 ```
-All is left is to construct a json transqlifier object
+
+All that is left is to construct a JSON transqlifier object:
 ```javascript
 const createFactory = require('json-transqlify').createFactory;
 
@@ -132,22 +140,25 @@ const obj = { name: "Harry Potter", age: 10, address: { city: 'UK', country: 'Li
 
 transqlifier(obj);
 ```
-**Please refer to examples folder** 
+**Please refer to examples folder**
+
 ## <a name="api"></a>API
-The definition file consists of the following sections
+The definition file consists of the following sections:
+
 ### <a name="version"></a>Version
-should be 1.0 for now
+Should be 1.0 for now:
 ```yaml
 version: 1.0
 ```
 
 ### <a name="validator"></a>Validator
 The Validator filters out entities before they get handed to the Loaders. There are two kind of validators:
-#### <a name="schemaValidator"></a>1. Schema
-a schema validator can be defined using json files to describe how the entity schema should look like. Underneath the hood Json Transqlifier uses [AJV](https://github.com/epoberezkin/ajv) implementation of [Json Schema](http://json-schema.org/)
 
-The schema file for the entity should go under the `default` section (refer to the example below). While any `$ref` defniitions can used to load any additional definitions that the default schema might refer to.
-For example, to write a validator for the following user object
+#### <a name="schemaValidator"></a>1. Schema
+A schema validator can be defined using JSON files to describe how the entity schema should look like. Underneath the hood JSON Transqlifier uses [AJV](https://github.com/epoberezkin/ajv) implementation of [Json Schema](http://json-schema.org/)
+
+The schema file for the entity should go under the `default` section (refer to the example below). While any `$ref` definitions can be used to load any additional definitions that the default schema might refer to.
+For example, to write a validator for the following user object:
 ```json
 {
   "name": "User Name",
@@ -157,8 +168,11 @@ For example, to write a validator for the following user object
     "city": "some city"
   } 
 }
-We might break the validator into two schema definitions into User and Address
-1. user-definition.json
+```
+
+We might break the validator into two schema definitions into User and Address:
+
+1. `user-definition.json`:
 ```json
 {
   "type": "object",
@@ -171,7 +185,9 @@ We might break the validator into two schema definitions into User and Address
   },
   "required": ["name", "age", "address"]
 }
-2. address-definition.json
+```
+
+2. `address-definition.json`:
 ```json
 {
   "type": "object",
@@ -182,8 +198,8 @@ We might break the validator into two schema definitions into User and Address
   "required": ["country", "city"]
 }
 ```
-Then we can reference both schemas like this 
 
+Then we can reference both schemas like this:
 ```yaml
 version: 1.0
 validator:
@@ -193,15 +209,17 @@ validator:
       id: Address
       file: address-schema.json
 ```
-#### <a name="funcValidator"></a>2. Func Validator
-when a `schema` validator is not enough you can have more control by providing a custom function validator.
-The function should be defined in a seperate file and exposed as a default export 
+
+#### <a name="funcValidator"></a>2. Custom Function Validator
+When a `schema` validator is not enough you can have more control by providing a custom function validator.
+The function should be defined in a separate file and exposed as a default export:
 ```javascript
 // is-odd.js
 const isOdd = num => num % 2
 module.exports = isOdd
 ```
-Then refeence the custom validator in the Transqlifier definition file  
+
+Then reference the custom validator in the Transqlifier definition file:
 ```yaml
 version: 1.0
 validator:
@@ -209,11 +227,12 @@ validator:
 ```
 
 ### <a name="transformers"></a>Transformers
-Transformers are defined as part lof `loaders`. They map the given `$entity` to table columns. 
-#### <a name="columnsTransformer"></a>1. columns
-The columns transformers allows you to map `$entity` to table columns by defining custom expressions.
+Transformers are defined as part lof `loaders`. They map the given `$entity` to table columns.
 
-For example, given the `User` object mentioned earlier and `users` table with (fname, lname, age, country, city) columns
+#### <a name="columnsTransformer"></a>1. Columns Transformer
+The columns transformer allows you to map `$entity` to table columns by defining custom expressions.
+
+For example, given the `User` object mentioned earlier and `users` table with (fname, lname, age, country, city) columns:
 ```yaml
 transformer:
   columns:
@@ -228,11 +247,11 @@ transformer:
     - column: city
       value: $entity.address.city
 ```
+
 *$history:* if the transformer was part of multiple loaders pipeline, the `$history` can be used to access values transformed via a previous loader (more on this later)
 
-#### <a name="funcTransformer"></a>2. Func Transformer
-A Custom function trasformer can be used by providing a file with a default exported function that should return a promise
-
+#### <a name="funcTransformer"></a>2. Custom Function Transformer
+A Custom function trasformer can be used by providing a file with a default exported function that returns a Promise:
 ```js
 //custom-transformer.js
 const func = ({$entity, $history, $conn}) => {
@@ -247,18 +266,19 @@ const func = ({$entity, $history, $conn}) => {
 module.exports = func
 }
 ```
+
 ```yaml
 transformer:
   func: customer-transformer.js
 ```
 
 ### <a name="loaders"></a>Loaders
-Loaders handle massaging the JSON (entity) and Inserting/Updating the DB.
+Loaders handle massaging the JSON (entity) and Inserting / Updating the DB.
 
 The `loaders` section is an array, so you can insert the JSON into multiple tables by defining multiple loaders.
 
 #### <a name="insertLoader"></a>1.Insert
-The insert loaders inserts entity to a given table. It requires a `transformer` to be defined. 
+The insert loaders inserts entity to a given table. It requires a `transformer` to be defined:
 ```yaml
 loaders:
   - insert:
@@ -270,9 +290,9 @@ loaders:
             value: $entity.name 
 
 ```
-#### <a name="updateLoader"></a> 2. Update
-The Update loader is used to update an existing row in db. It requires a `transformer` and update condition
 
+#### <a name="updateLoader"></a>2. Update
+The Update loader is used to update an existing row in database. It requires a `transformer` and update condition:
 ```yaml
 loaders:
   - update:
@@ -286,8 +306,9 @@ loaders:
         params:
           - $entity.id
 ```
-#### <a name="upsertLoader"></a> 3. Upsert
-The Upsert loader is used to insert or update (on duplicate key error) existing record. It requires a `transformer`, `tableName`, and `label`.
+
+#### <a name="upsertLoader"></a>3. Upsert
+The Upsert loader is used to insert or update (on duplicate key error) existing record. It requires a `transformer`, `tableName`, and `label`:
 ```yaml
 loaders:
   - upsert:
@@ -300,11 +321,12 @@ loaders:
           - column: difficulty
             value: $entity.difficulty
 ```
-`primaryKey` is an optional field. It pointes to the auto incremented column (if any) in db. In case of update, it will be needed to retrieve the `id` of the affected row. 
-checkout the `examples/upsert-example` for working demo
 
-#### <a name="batchInsertLoader"></a> 3. Batch Insert Loader
-In cases where you want to insert a bulk of data in one go. Batch Insert Loader offers a great performance gain over multiple `Insert Loader`. It requires you to define `transformer`, `tableName`, `label` and `source`. 
+`primaryKey` is an optional field. It points to an auto incremented column (if any) in database. In case of update, it will be needed to retrieve the `id` of the affected row.
+See `examples/upsert-example` for a working demo.
+
+#### <a name="batchInsertLoader"></a>3. Batch Insert Loader
+In case you want to bulk insert data in one go, Batch Insert Loader offers a great performance gain over multiple `Insert Loader`. It requires you to define `transformer`, `tableName`, `label` and `source`:
 ```yaml
   - batchInsert:
       tableName: users # table to insert entity into
@@ -315,22 +337,25 @@ In cases where you want to insert a bulk of data in one go. Batch Insert Loader 
           - column: fname
             value: $entity.name 
 ```
-Source is an expression that should return an array of items that will be inserted. For example if `$entity` is
+
+Source is an expression that should return an array of items that will be inserted. For example if `$entity` is:
 ```javascript
 {
   items: ['item1', 'item1']
 }
 ```
+
 Then `source` should be defined as 
 ```yaml
 source: $entity.source
 ```
-In cases were $entity is the array of items you wish to insert, then deine `source` as 
+
+In case $entity is the array of items you wish to insert, then define `source` as:
 ```yaml
 source: $entity
 ```
 
-#### <a name="batchUpsertLoader"></a> 3. Batch Upsert Loader
+#### <a name="batchUpsertLoader"></a>3. Batch Upsert Loader
 In cases where you want to insert a bulk of data in one go. Batch Upsert Loader will insert and updated existing record in one transaction. It requires you to define `transformer`, `tableName`, `label` and `source`. 
 
 ```yaml
@@ -347,9 +372,10 @@ In cases where you want to insert a bulk of data in one go. Batch Upsert Loader 
 ```
 
 ### <a name="preconditions"></a>Preconditions
-Preconditions validate `$enitity` before executing the loader, and if it returns false, the loader does not get executed
+Preconditions validate `$enitity` before executing the loader, and if it returns false, the loader does not get executed.
+
 #### <a name="expPrecondition"></a>1. Expression Precondition (exp)
-Evalutes a given expression at runtime that can access `$entity` and `$history` objects. It can also use `_` lodash
+Evalutes a given expression at runtime that can access `$entity` and `$history` objects. It can also use `_` lodash:
 ```yaml
 loaders:
   - insert:
@@ -360,14 +386,16 @@ loaders:
     on: # pre conditions are defined here 
       - exp: $entity.age < 30 # only insert uses who are below 30
 ```
+
 #### <a name="dbPrecondition"></a>2. Database Query (db)
-Runs a query against the db and allows you to assert the returned result.
+Runs a query against the database and allows you to assert the returned result.
 Forexample, we want to insert a `course` but avoide duplicate titles
 ```json
 {
   "title": "Course Title"
 }
 ```
+
 ```yaml
 loaders:
   - insert:
@@ -411,8 +439,8 @@ loaders:
 
 *Note:* preconditions are defined inside an array object. Meaning, you can provide multiple preconditions that should all resolve to `true` for the loader to execute.
 
-### <a name="$history"></a> $history
-The $history object can be accessed inside `transformers` and `preconditions`. It contains the result of previous loaders. For example
+### <a name="$history"></a>$history
+The $history object can be accessed inside `transformers` and `preconditions`. It contains the result of previous loaders. For example:
 ```yaml
 loaders:
   - insert:
@@ -432,13 +460,16 @@ loaders:
           - column: cap_title
             value: $history.InsertTable.title.toUperCase() # $history has access to the transformed $entity fields 
 ```
+
 *note:* In case there is a precondition defined in the First Loader, and that precondition happened to evalute to false, the loader result won't be added to `$history` object
 
+### <a name="$tableName"></a>$tableName
+The table name field defined in `loader` can either be a string referring to the table name or it can be an expression evaluated at runtime.
+The expression has access to the following variables:
 
-### <a name="$tableName"></a> tableName
-the table name field defined in `loader` can either be a string refering to the table name.
-or it can be an expression evaulated at run time. The expression has access to the following variables
-`_`, `R` (ramda), `$entity`, `$source` (in case of batchInsert and batchUpsert loaders)
+- `_`, `R` (ramda).
+- `$entity`.
+- `$source` (in case of batchInsert and batchUpsert loaders).
 
 ```yaml
 loaders:
